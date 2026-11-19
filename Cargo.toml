@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = ["native/guard", "native/hook"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77"
+license = "MIT"
+repository = "https://github.com/vdiskg/dsh-git-bash-rs"
+
+[workspace.dependencies]
+# Microsoft's official Win32 bindings: pure FFI, no transitive runtime deps.
+windows-sys = "0.61.2"
+
+# Inline hooking for the injected DLL. Pulls iced-x86 (instruction
+# relocation), region (page permissions) and libc/mach2 (non-Windows gating).
+detour = "0.11.1"
+
+[profile.release]
+opt-level = 2
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

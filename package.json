@@ -1,0 +1,102 @@
+{
+  "name": "dsh-plugin-git-bash-rs",
+  "version": "0.1.0",
+  "description": "Use Git for Windows Bash as the default DeepSeek Harness shell, with the Windows sandbox intact (Rust native guard)",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "git-bash",
+    "sandbox",
+    "windows",
+    "rust"
+  ],
+  "homepage": "https://github.com/vdiskg/dsh-git-bash-rs#readme",
+  "bugs": {
+    "url": "https://github.com/vdiskg/dsh-git-bash-rs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vdiskg/dsh-git-bash-rs.git"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./agents": {
+      "types": "./lib/types/agents.d.ts",
+      "default": "./lib/agents.js"
+    },
+    "./client": "./lib/client.js",
+    "./discovery": {
+      "types": "./lib/types/discovery.d.ts",
+      "default": "./lib/discovery.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "native/bin/win32-x64/msys-token-guard.exe",
+    "native/bin/win32-x64/msys_token_guard_hook.dll",
+    "cordis.patch.yml",
+    "licenses",
+    "README.md",
+    "NOTICE",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@12.21.0",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  },
+  "scripts": {
+    "build:native": "pwsh -NoProfile -File scripts/build-native.ps1",
+    "build": "pnpm run build:js",
+    "build:js": "node scripts/build-lib.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm run build:js && node scripts/run-tests.mjs"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.1.0",
+    "@deepseek-ai/dsh-agent": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-bash-local": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-sandbox": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-sandbox-policy": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-shell": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-subprocess": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-system-prompt": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.3",
+    "@deepseek-ai/schemastery": "3.19.0",
+    "@types/node": "^26.6.6",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.1.0",
+    "@deepseek-ai/dsh-agent": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-bash-local": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-sandbox": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-sandbox-policy": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-shell": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-subprocess": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-system-prompt": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.3",
+    "@deepseek-ai/schemastery": "3.19.0"
+  }
+}

@@ -1,0 +1,96 @@
+# NOTICE
+
+This project is a **Rust** reimplementation of the native mechanism used by
+`dsh-git-bash`, and parts of its DLL-injection code are derived from Microsoft
+Detours. The copyright notices for both are reproduced below and in
+[LICENSE](LICENSE).
+
+## dsh-git-bash (upstream reference)
+
+- **dsh-plugin-git-bash** — <https://github.com/inmny/dsh-git-bash>
+- Copyright (c) 2026
+- Licensed under the MIT License; the upstream text is kept unmodified in
+  [licenses/dsh-git-bash-LICENSE](licenses/dsh-git-bash-LICENSE)
+
+**This project references the source code of `dsh-git-bash` and reimplements it
+in Rust.** The plugin layer and the native mechanism are both ports of upstream
+files, not independent designs. The following upstream files were read as the
+basis for this port:
+
+| Upstream file | Adapted into |
+|---|---|
+| `src/index.ts` | `src/index.js` — shell executor, sandbox wrapping, failure classification |
+| `src/agents.ts` | `src/agents.js` — per-agent tool registration and prompt sections |
+| `src/discovery.ts` | `src/discovery.js` — `bash.exe` resolution |
+| `client.js` | `client.js` — browser half |
+| `native/msys-token-guard.cpp` | `native/guard/` — confined launcher, token hardening, `--normalize-server-dacl`, `--probe-current-token` |
+| `native/msys-token-guard-hook.cpp` | `native/hook/` — the `NtSetInformationToken`, `RtlAddAccessAllowedAce` and `CreateProcessW` detours (`hook.rs`), grandchild injection and child discard (`child.rs`), and the same import rewrite as the guard (`imports.rs`) |
+
+The specific techniques carried over are:
+
+- injecting a helper DLL by rewriting a suspended process's PE import directory,
+  so the loader maps it before the program's static initializers run;
+- detouring `NtSetInformationToken(TokenDefaultDacl)` for MSYS2 callers;
+- substituting the logon SID for `BUILTIN\Administrators` in
+  `RtlAddAccessAllowedAce` grants of `GENERIC_ALL`;
+- detouring process creation so forked children are injected too;
+- hardening the child token's default DACL and denying
+  `TOKEN_ADJUST_DEFAULT` on it;
+- normalizing the server process token's default DACL;
+- the Git Bash versus Linux system-prompt guidance and the exit-code note.
+
+The reimplementation is in Rust rather than C++20, and the following differ
+deliberately:
+
+- **Microsoft Detours is not linked.** Inline hooking uses the `detour` crate
+  instead of Detours' `DetourAttach`, and injection is written directly against
+  the Win32 process and PE APIs (see the Detours section below, which also
+  covers the injection code that *is* derived from Detours).
+- **No ANSI path limitation.** Injection passes a wide path through the import
+  descriptor, so the install location need not be representable in the system
+  code page and is not limited to `MAX_PATH`.
+- **No vendored C library.** The Rust build needs only `cargo`; there is no
+  CMake step and no Detours source tree in this repository.
+
+## Microsoft Detours
+
+- **Detours** — <https://github.com/microsoft/Detours>
+- Release v4.0.1 (commit `e4bfd6b03e50de46b47abfbd1e46b384f0c5f833`)
+- Copyright (c) Microsoft Corporation. All rights reserved.
+- Licensed under the MIT License; the upstream text is kept unmodified in
+  [licenses/Detours-LICENSE](licenses/Detours-LICENSE)
+
+**This project references the source code of Microsoft Detours and reimplements
+it in Rust.** Detours is not vendored or linked, but the structures below are
+translated from its sources rather than derived from the Win32 documentation:
+
+| Detours file | Adapted into |
+|---|---|
+| `uimports.cpp` — `UpdateImports64` | `native/guard/src/imports.rs`, `native/hook/src/imports.rs` — the import-directory rewrite: descriptor layout, null-terminated thunk pairs, preserving the old descriptors, creating the IAT directory, and clearing the checksum |
+| `creatwth.cpp` — `FindAndAllocateNearBase` | `native/guard/src/imports.rs` — `allocate_near_base`, the scan for a free region within 4 GB of the target image, including the allocation-granularity rounding and the region-size end-of-space check |
+
+The Rust versions are translations that target the same PE structures and the
+same placement constraints, written against `windows-sys` rather than C++ and
+carrying their own error handling.
+
+## Third-party crates
+
+Linked as ordinary Rust dependencies; none of their source is vendored here.
+
+- `windows-sys` — MIT OR Apache-2.0 (Kenny Kerr and the Rust project)
+- `detour` — BSD-2-Clause
+- `windows-link` — MIT OR Apache-2.0 (direct dependency of `windows-sys`)
+- `iced-x86` — MIT; `region` — MIT; `libc` — MIT OR Apache-2.0;
+  `mach2` — BSD-2-Clause; `bitflags` — MIT OR Apache-2.0;
+  `lazy_static` — MIT OR Apache-2.0
+- These are reached transitively through the two direct dependencies above; see
+  `Cargo.lock` and each crate's published metadata for the authoritative list.
+
+## Upstream MIT text
+
+Detours' per-file header reads:
+
+```
+Microsoft Research Detours Package
+Copyright (c) Microsoft Corporation.  All rights reserved.
+```

@@ -2,6 +2,17 @@ MIT License
 
 Copyright (c) 2026 vdiskg
 
+Copyright (c) 2026
+  Reproduced verbatim from dsh-git-bash <https://github.com/inmny/dsh-git-bash>.
+  This project references that project's source code and reimplements it in
+  Rust. The upstream license text is kept unmodified in
+  licenses/dsh-git-bash-LICENSE.
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+  Reproduced from Microsoft Detours <https://github.com/microsoft/Detours>
+  v4.0.1. Portions of the DLL-injection mechanism are translated into Rust.
+  The upstream license text is kept unmodified in licenses/Detours-LICENSE.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights

@@ -1,0 +1,32 @@
+# Rust
+/target
+**/target/
+
+# Built native artifacts are committed on purpose (see native/bin), and so is
+# lib/ (the published JS modules, exactly as the loader reads them). Only build
+# scratch output is ignored.
+/native/build/
+
+# Node
+node_modules/
+# A content-addressed store is machine state, not repository state, and pnpm
+# resolves it from its own configuration. Ignore the path anyway so a checkout
+# that does configure one locally cannot commit it.
+.pnpm-store/
+
+# Scratch files written by scripts/run-tests.mjs
+.peer-*.json
+
+# Local env
+.env
+*.log
+
+# Scratch files
+.commitmsg.tmp
+.merge-backup.tmp
+.msg*.tmp
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

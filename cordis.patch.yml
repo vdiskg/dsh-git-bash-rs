@@ -1,0 +1,33 @@
+# Replace the platform-selected PowerShell stack with Git Bash on Windows.
+# On other platforms every row keeps the shipped behaviour.
+
+# The shipped `bash-sandbox` row is the Linux executor and is already disabled
+# on Windows by dsh itself. The expression below makes that selection explicit
+# and keeps the row enabled on non-Windows, where this bundle is inert anyway.
+- id: bash-sandbox
+  disabled: !!js process.platform === 'win32'
+
+- id: pwsh-sandbox
+  disabled: true
+
+# Keep the model-facing bash tool; drop the PowerShell one.
+- id: tool-bash
+  disabled: false
+
+- id: tool-pwsh
+  disabled: true
+
+- insert:
+    # The Git Bash executor that replaces `ctx.shell` on Windows.
+    - id: git-bash-shell
+      name: 'dsh-plugin-git-bash-rs'
+      disabled: !!js process.platform !== 'win32'
+      config:
+        timeoutMs: 60000
+
+    # Web agent presets contribute their own shell tools from an ancestor
+    # scope. This adapter shadows those with the global Git Bash-backed tool
+    # and keeps `pwsh` uncallable inside every agent.
+    - id: git-bash-agent-shell
+      name: 'dsh-plugin-git-bash-rs/agents'
+      disabled: !!js process.platform !== 'win32'
