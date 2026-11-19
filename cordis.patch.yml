@@ -10,6 +10,15 @@
 - id: pwsh-sandbox
   disabled: true
 
+# `dsh-sandbox-tune` installs its own shell executor under this id. Both
+# executors provide `ctx.shell`, and the second registration throws
+# `service "shell" has been registered`, so exactly one may be live. This plugin
+# is the shell itself, so it takes the seat and the tuning executor stands down;
+# that bundle's sandbox provider (its writable-root whitelist) is unaffected,
+# because it provides `ctx.sandbox`, which nothing here touches.
+- id: sandbox-tune-bash
+  disabled: true
+
 # Keep the model-facing bash tool; drop the PowerShell one.
 - id: tool-bash
   disabled: false
